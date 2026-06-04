@@ -30,7 +30,7 @@ jobs:
             libgbm-dev libvulkan-dev libxcb1-dev libpipewire-0.3-dev \
             libpolkit-agent-1-dev libglib2.0-dev \
             libegl-dev libgles-dev libegl1-mesa-dev libgl1-mesa-dev \
-            wayland-protocols-dev meson \
+            meson \
             qml6-module-qtquick qml6-module-qtquick-controls
           # Trixie'deki wayland-protocols eski; guncel surumu kaynaktan kur
           git clone --depth 1 --branch 1.45 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src || \
