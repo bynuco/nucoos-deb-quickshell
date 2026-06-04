@@ -67,6 +67,7 @@ jobs:
           DESTDIR="${GITHUB_WORKSPACE}/pkgroot" cmake --install build
           mkdir -p "${GITHUB_WORKSPACE}/pkgroot/DEBIAN"
           cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
+          echo "" >> "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
 
       - name: Build .deb
         run: |
