@@ -30,13 +30,20 @@ jobs:
             libgbm-dev libvulkan-dev libxcb1-dev libpipewire-0.3-dev \
             libpolkit-agent-1-dev libglib2.0-dev \
             libegl-dev libgles-dev libegl1-mesa-dev libgl1-mesa-dev \
+            wayland-protocols-dev meson \
             qml6-module-qtquick qml6-module-qtquick-controls
+          # Trixie'deki wayland-protocols eski; guncel surumu kaynaktan kur
+          git clone --depth 1 --branch 1.45 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src || \
+            git clone --depth 1 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src
+          cd wp-src
+          meson setup builddir --prefix=/usr
+          meson install -C builddir
+          cd ..
 
-      - name: Verify EGL pkg-config
+      - name: Verify background-effect protocol
         run: |
-          echo "=== egl.pc araniyor ==="
-          find / -name "egl.pc" 2>/dev/null || echo "egl.pc BULUNAMADI"
-          pkg-config --exists egl && echo "pkg-config egl: VAR" || echo "pkg-config egl: YOK"
+          find /usr/share/wayland-protocols -name "*background-effect*" 2>/dev/null \
+            && echo "PROTOKOL VAR" || echo "PROTOKOL YOK"
 
       - name: Clone Quickshell source
         run: git clone --depth 1 --branch v0.3.0 https://github.com/quickshell-mirror/quickshell src
