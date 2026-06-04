@@ -1,0 +1,67 @@
+name: Build Quickshell deb
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container: debian:trixie
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential cmake ninja-build pkg-config git ca-certificates \
+            qt6-base-dev qt6-declarative-dev qt6-shadertools-dev \
+            qt6-wayland-dev qt6-svg-dev spirv-tools \
+            libcli11-dev libjemalloc-dev wayland-protocols \
+            libdrm-dev libqtqmlmodels-dev libpam0g-dev \
+            qt6-base-private-dev qt6-declarative-private-dev \
+            qt6-wayland-private-dev dpkg-dev
+
+      - name: Clone Quickshell source
+        run: git clone --depth 1 https://github.com/quickshell-mirror/quickshell src
+
+      - name: Configure
+        run: |
+          cd src
+          cmake -GNinja -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX=/usr \
+            -DCRASH_REPORTER=OFF
+
+      - name: Build
+        run: cd src && cmake --build build
+
+      - name: Install into package root
+        run: |
+          cd src
+          DESTDIR="${GITHUB_WORKSPACE}/pkgroot" cmake --install build
+          mkdir -p "${GITHUB_WORKSPACE}/pkgroot/DEBIAN"
+          cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
+
+      - name: Build .deb
+        run: |
+          dpkg-deb --build --root-owner-group pkgroot quickshell_amd64.deb
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: quickshell-deb
+          path: "*.deb"
+
+      - name: Publish to Releases
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: "*.deb"
