@@ -10,7 +10,7 @@ araç setidir. Wayland ve X11 destekler.
 
 Releases bölümünden en güncel `.deb` dosyasını indirip:
 
-    sudo apt install ./quickshell_0.2.1_amd64.deb
+    sudo apt install ./quickshell_0.3.0_amd64.deb
 
 ## Derleme
 

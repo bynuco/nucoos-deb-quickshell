@@ -27,10 +27,12 @@ jobs:
             libwayland-dev libdrm-dev libqtqmlmodels-dev libpam0g-dev \
             qt6-base-private-dev qt6-declarative-private-dev \
             qt6-wayland-private-dev dpkg-dev \
+            libgbm-dev libvulkan-dev libxcb1-dev libpipewire-0.3-dev \
+            libpolkit-agent-1-dev libglib2.0-dev \
             qml6-module-qtquick qml6-module-qtquick-controls
 
       - name: Clone Quickshell source
-        run: git clone --depth 1 --branch v0.2.1 https://github.com/quickshell-mirror/quickshell src
+        run: git clone --depth 1 --branch v0.3.0 https://github.com/quickshell-mirror/quickshell src
 
       - name: Configure
         run: |
@@ -54,7 +56,7 @@ jobs:
 
       - name: Build .deb
         run: |
-          dpkg-deb --build --root-owner-group pkgroot quickshell_0.2.1_amd64.deb
+          dpkg-deb --build --root-owner-group pkgroot quickshell_0.3.0_amd64.deb
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -66,5 +68,5 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v0.2.1
+          tag_name: v0.3.0
           files: "*.deb"
