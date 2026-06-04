@@ -29,7 +29,14 @@ jobs:
             qt6-wayland-private-dev dpkg-dev \
             libgbm-dev libvulkan-dev libxcb1-dev libpipewire-0.3-dev \
             libpolkit-agent-1-dev libglib2.0-dev \
+            libegl-dev libgles-dev libegl1-mesa-dev libgl1-mesa-dev \
             qml6-module-qtquick qml6-module-qtquick-controls
+
+      - name: Verify EGL pkg-config
+        run: |
+          echo "=== egl.pc araniyor ==="
+          find / -name "egl.pc" 2>/dev/null || echo "egl.pc BULUNAMADI"
+          pkg-config --exists egl && echo "pkg-config egl: VAR" || echo "pkg-config egl: YOK"
 
       - name: Clone Quickshell source
         run: git clone --depth 1 --branch v0.3.0 https://github.com/quickshell-mirror/quickshell src
