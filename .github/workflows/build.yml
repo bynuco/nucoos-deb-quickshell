@@ -30,25 +30,19 @@ jobs:
             libgbm-dev libvulkan-dev libxcb1-dev libpipewire-0.3-dev \
             libpolkit-agent-1-dev libglib2.0-dev \
             libegl-dev libgles-dev libegl1-mesa-dev libgl1-mesa-dev \
-            meson \
-            qml6-module-qtquick qml6-module-qtquick-controls
-          # Trixie'deki wayland-protocols eski; guncel surumu kaynaktan kur
-          git clone --depth 1 --branch 1.45 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src || \
-            git clone --depth 1 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src
+            meson qml6-module-qtquick qml6-module-qtquick-controls
+
+          # Wayland protocols güncelleme
+          git clone --depth 1 --branch 1.45 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src
           cd wp-src
           meson setup builddir --prefix=/usr
           meson install -C builddir
           cd ..
 
-      - name: Verify background-effect protocol
-        run: |
-          find /usr/share/wayland-protocols -name "*background-effect*" 2>/dev/null \
-            && echo "PROTOKOL VAR" || echo "PROTOKOL YOK"
-
       - name: Clone Quickshell source
         run: git clone --depth 1 --branch v0.3.0 https://github.com/quickshell-mirror/quickshell src
 
-      - name: Configure
+      - name: Configure and Build
         run: |
           cd src
           cmake -GNinja -B build \
@@ -57,17 +51,28 @@ jobs:
             -DCRASH_HANDLER=OFF \
             -DNO_PCH=ON \
             -DDISTRIBUTOR="nucoOS"
-
-      - name: Build
-        run: cd src && cmake --build build
+          cmake --build build
 
       - name: Install into package root
         run: |
           cd src
           DESTDIR="${GITHUB_WORKSPACE}/pkgroot" cmake --install build
           mkdir -p "${GITHUB_WORKSPACE}/pkgroot/DEBIAN"
+
+      - name: Process Control and Dependencies
+        run: |
+          # Orijinal control dosyasını kopyala
           cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
-          echo "" >> "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
+          
+          # Otomatik bağımlılık analizi (shlibs)
+          # Bu komut binary'yi inceler ve eksik olanları pkgroot/DEBIAN/substvars içine yazar
+          dpkg-shlibdeps -pquickshell "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell" || true
+          
+          # Otomatik bulunan bağımlılıkları control dosyasına ekle
+          # Bu, libpipewire ve diğerleri için manuel düzenleme ihtiyacını bitirir
+          if [ -f debian/substvars ]; then
+            sed -i '/^Depends:/ s/$/ , ${shlibs:Depends}/' "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
+          fi
 
       - name: Build .deb
         run: |
