@@ -54,17 +54,27 @@ jobs:
 
       - name: Install into package root
         run: |
-          cd src
-          DESTDIR="${GITHUB_WORKSPACE}/pkgroot" cmake --install build
+          DESTDIR="${GITHUB_WORKSPACE}/pkgroot" cmake --install src/build
           mkdir -p "${GITHUB_WORKSPACE}/pkgroot/DEBIAN"
 
-      - name: Process Control and Dependencies
+      - name: Resolve shared library dependencies
         run: |
-          cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
-          dpkg-shlibdeps -pquickshell "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell" || true
-          if [ -f debian/substvars ]; then
-            sed -i '/^Depends:/ s/$/ , ${shlibs:Depends}/' "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
-          fi
+          # substvars'ı workspace root'a yaz
+          dpkg-shlibdeps \
+            -O \
+            "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell" \
+            2>/dev/null | grep "^shlibs:Depends=" | sed 's/shlibs:Depends=//' > /tmp/shlibs_deps.txt
+
+          SHLIBS_DEPS=$(cat /tmp/shlibs_deps.txt)
+          echo "Detected deps: ${SHLIBS_DEPS}"
+
+          # Control dosyasını oluştur — ${shlibs:Depends} olmadan, direkt değerleri yaz
+          sed "s|\${shlibs:Depends}|${SHLIBS_DEPS}|g" \
+            "${GITHUB_WORKSPACE}/debian/control" \
+            > "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
+
+          echo "--- Final control ---"
+          cat "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
 
       - name: Build .deb
         run: |
