@@ -32,7 +32,6 @@ jobs:
             libegl-dev libgles-dev libegl1-mesa-dev libgl1-mesa-dev \
             meson qml6-module-qtquick qml6-module-qtquick-controls
 
-          # Wayland protocols güncelleme
           git clone --depth 1 --branch 1.45 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src
           cd wp-src
           meson setup builddir --prefix=/usr
@@ -61,15 +60,12 @@ jobs:
 
       - name: Process Control and Dependencies
         run: |
-          # Orijinal control dosyasını kopyala
           cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
           
-          # Otomatik bağımlılık analizi (shlibs)
-          # Bu komut binary'yi inceler ve eksik olanları pkgroot/DEBIAN/substvars içine yazar
+          # Bağımlılıkları analiz et ve substvars dosyasını oluştur
           dpkg-shlibdeps -pquickshell "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell" || true
           
-          # Otomatik bulunan bağımlılıkları control dosyasına ekle
-          # Bu, libpipewire ve diğerleri için manuel düzenleme ihtiyacını bitirir
+          # Bağımlılıkları control dosyasına işler
           if [ -f debian/substvars ]; then
             sed -i '/^Depends:/ s/$/ , ${shlibs:Depends}/' "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
           fi
