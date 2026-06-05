@@ -12,3 +12,4 @@ Description: QtQuick based desktop shell toolkit for Wayland and X11
  .
  It can be used alongside a Wayland compositor or window manager to
  build a complete desktop environment, with live QML hot-reloading.
+ 
