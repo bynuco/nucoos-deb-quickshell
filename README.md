@@ -12,12 +12,6 @@ Releases bölümünden en güncel `.deb` dosyasını indirip:
 
     sudo apt install ./quickshell_0.3.0_amd64.deb
 
-## Derleme
-
-Paket, GitHub Actions üzerinde Debian Trixie konteynerinde otomatik derlenir.
-Elle tetiklemek için Actions sekmesinden "Build Quickshell deb" workflow'unu
-Run workflow ile başlatabilirsiniz.
-
 ## Lisans
 
 Quickshell, GNU LGPL 3.0 altında lisanslanmıştır.
