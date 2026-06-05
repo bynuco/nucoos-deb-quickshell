@@ -2,7 +2,6 @@ Source: quickshell
 Section: utils
 Priority: optional
 Maintainer: bynuco <nesimiztrk@gmail.com>
-
 Package: quickshell
 Version: 0.3.0
 Architecture: amd64
