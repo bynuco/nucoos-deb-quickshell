@@ -61,11 +61,7 @@ jobs:
       - name: Process Control and Dependencies
         run: |
           cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
-          
-          # Bağımlılıkları analiz et ve substvars dosyasını oluştur
           dpkg-shlibdeps -pquickshell "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell" || true
-          
-          # Bağımlılıkları control dosyasına işler
           if [ -f debian/substvars ]; then
             sed -i '/^Depends:/ s/$/ , ${shlibs:Depends}/' "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
           fi

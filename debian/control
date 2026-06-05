@@ -4,8 +4,12 @@ Priority: optional
 Maintainer: bynuco <nesimiztrk@gmail.com>
 
 Package: quickshell
+Version: 0.3.0
 Architecture: amd64
-Depends: libqt6widgets6, libjemalloc2, libpam0g, libpipewire-0.3-0, libwayland-client0
+Depends: libqt6widgets6, libqt6qml6, libqt6quick6, libqt6waylandclient6, libqt6svg6, libjemalloc2, libpam0g, libpipewire-0.3-0, libwayland-client0, ${shlibs:Depends}
 Description: QtQuick based desktop shell toolkit for Wayland and X11
  Quickshell is a flexible toolkit for building status bars, widgets,
  lockscreens and other desktop components using Qt6 and QtQuick.
+ .
+ It can be used alongside a Wayland compositor or window manager to
+ build a complete desktop environment, with live QML hot-reloading.
