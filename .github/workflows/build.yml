@@ -32,7 +32,6 @@ jobs:
             libegl-dev libgles-dev libegl1-mesa-dev libgl1-mesa-dev \
             meson qml6-module-qtquick qml6-module-qtquick-controls
 
-          # Wayland protocols güncelleme
           git clone --depth 1 --branch 1.45 https://gitlab.freedesktop.org/wayland/wayland-protocols.git wp-src
           cd wp-src
           meson setup builddir --prefix=/usr
@@ -61,18 +60,22 @@ jobs:
 
       - name: Process Control and Dependencies
         run: |
-          # Orijinal control dosyasını kopyala
+          # 1. Control dosyasını kopyala
           cp "${GITHUB_WORKSPACE}/debian/control" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
           
-          # Otomatik bağımlılık analizi (shlibs)
-          # Bu komut binary'yi inceler ve eksik olanları pkgroot/DEBIAN/substvars içine yazar
-          dpkg-shlibdeps -pquickshell "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell" || true
+          # 2. Otomatik bağımlılık analizi
+          # Bu komut binary'yi inceler ve debian/substvars dosyasını oluşturur
+          dpkg-shlibdeps -pquickshell "${GITHUB_WORKSPACE}/pkgroot/usr/bin/quickshell"
           
-          # Otomatik bulunan bağımlılıkları control dosyasına ekle
-          # Bu, libpipewire ve diğerleri için manuel düzenleme ihtiyacını bitirir
-          if [ -f debian/substvars ]; then
-            sed -i '/^Depends:/ s/$/ , ${shlibs:Depends}/' "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
+          # 3. Bağımlılıkları enjekte et
+          # ${shlibs:Depends} değişkenini control dosyasına ekler (eğer yoksa)
+          if ! grep -q "\${shlibs:Depends}" "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"; then
+            sed -i '/^Depends:/ s/$/, ${shlibs:Depends}/' "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
           fi
+          
+          # 4. Final control dosyasını oluştur
+          # Bu komut ${shlibs:Depends} değişkenini gerçek kütüphane listesiyle değiştirir
+          dpkg-gencontrol -pquickshell -P"${GITHUB_WORKSPACE}/pkgroot" -O > "${GITHUB_WORKSPACE}/pkgroot/DEBIAN/control"
 
       - name: Build .deb
         run: |
